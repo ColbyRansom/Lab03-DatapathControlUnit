@@ -1,11 +1,11 @@
 //=========================================================================
 // Name & Email must be EXACTLY as in Gradescope roster!
-// Name: 
-// Email: 
+// Name: Colby Ransom
+// Email: crans006@ucr.edu
 // 
-// Assignment name: 
-// Lab section: 
-// TA: 
+// Assignment name: Datapath Control Unit
+// Lab section: 01
+// TA: Allan Knight
 // 
 // I hereby certify that I have not received assistance on this assignment,
 // or used code, from ANY outside source other than the instruction team
@@ -140,12 +140,190 @@ module datapath_tb;
         // -------------------------------------------------------
         // More Control Unit tests jere
         // -------------------------------------------------------
+        // R-type: AND (funct 0x24)
+        $write("\tTest Case 1: R-type (and) ...");
+        test_case(
+            32'h00000024,  // instruction
+            32'hFFFFFFFF,  // A
+            32'h00000001,  // B
+            1'b0,          // zero
+            32'h00000001,  // result
+            1'b1,          // reg_dst
+            1'b0,          // branch
+            1'b0,          // mem_read
+            1'b0,          // mem_to_reg
+            2'b10,         // alu_op (R-type)
+            1'b0,          // mem_write
+            1'b0,          // alu_src
+            1'b1           // reg_write
+        );
 
+        // R-type: OR (funct 0x25)
+        $write("\tTest Case 2: R-type (or) ...");
+        test_case(
+            32'h00000025,
+            32'hFFFFFFFF,
+            32'h00000001,
+            1'b0,
+            32'hFFFFFFFF,
+            1'b1,
+            1'b0,
+            1'b0,
+            1'b0,
+            2'b10,
+            1'b0,
+            1'b0,
+            1'b1
+        );
+
+        // R-type: ADD (funct 0x20)
+        $write("\tTest Case 3: R-type (add) ...");
+        test_case(
+            32'h00000020,
+            32'hFFFFFFFF,
+            32'h00000001,
+            1'b1,
+            32'h00000000,
+            1'b1,
+            1'b0,
+            1'b0,
+            1'b0,
+            2'b10,
+            1'b0,
+            1'b0,
+            1'b1
+        );
+
+        // R-type: SUB (funct 0x22)
+        $write("\tTest Case 4: R-type (sub) ...");
+        test_case(
+            32'h00000022,
+            32'hFFFFFFFF,
+            32'h00000001,
+            1'b0,
+            32'hFFFFFFFE,
+            1'b1,
+            1'b0,
+            1'b0,
+            1'b0,
+            2'b10,
+            1'b0,
+            1'b0,
+            1'b1
+        );
+
+        // R-type: SLT (funct 0x2A)
+        $write("\tTest Case 5: R-type (slt) ...");
+        test_case(
+            32'h0000002A,
+            32'hFFFFFFFF,  // -1
+            32'h00000001,  //  1
+            1'b0,
+            32'h00000001,  // -1 < 1 => 1
+            1'b1,
+            1'b0,
+            1'b0,
+            1'b0,
+            2'b10,
+            1'b0,
+            1'b0,
+            1'b1
+        );
+
+        // R-type: NOR (funct 0x27)
+        $write("\tTest Case 6: R-type (nor) ...");
+        test_case(
+            32'h00000027,
+            32'hFFFFFFFF,
+            32'h00000001,
+            1'b1,
+            32'h00000000,  // ~(FFFFFFFF | 1) = 0
+            1'b1,
+            1'b0,
+            1'b0,
+            1'b0,
+            2'b10,
+            1'b0,
+            1'b0,
+            1'b1
+        );
+
+        // addi (opcode 0x08) : 0x20000004
+        $write("\tTest Case 7: addi ...");
+        test_case(
+            32'h20000004,
+            32'hFFFFFFFB,  // -5
+            32'h00000004,  // immediate = 4 (your tb provides it as B)
+            1'b0,
+            32'hFFFFFFFF,  // -5 + 4 = -1
+            1'b0,          // reg_dst = rt
+            1'b0,          // branch
+            1'b0,          // mem_read
+            1'b0,          // mem_to_reg
+            2'b00,         // alu_op = add (immediate)
+            1'b0,          // mem_write
+            1'b1,          // alu_src = immediate
+            1'b1           // reg_write
+        );
+
+        // lw (opcode 0x23)
+        $write("\tTest Case 8: lw ...");
+        test_case(
+            32'h8C000020,
+            32'h000000FF,
+            32'h00000020,
+            1'b0,
+            32'h0000011F,  // base+offset = 0xFF + 0x20
+            1'b0,          // rt
+            1'b0,
+            1'b1,          // mem_read
+            1'b1,          // mem_to_reg
+            2'b00,         // add for address calc
+            1'b0,
+            1'b1,          // alu_src = immediate
+            1'b1           // reg_write
+        );
+
+        // sw (opcode 0x2B)
+        $write("\tTest Case 9: sw ...");
+        test_case(
+            32'hAC000064,
+            32'h000000FF,
+            32'h00000064,
+            1'b0,
+            32'h00000163,  // 0xFF + 0x64
+            1'b0,          // don't care; set 0
+            1'b0,
+            1'b0,
+            1'b0,
+            2'b00,
+            1'b1,          // mem_write
+            1'b1,          // alu_src = immediate
+            1'b0           // reg_write
+        );
+
+        // beq (opcode 0x04)
+        $write("\tTest Case 10: beq ...");
+        test_case(
+            32'h10000025,
+            32'h000000FF,
+            32'h00000025,
+            1'b0,
+            32'h000000DA,  // 0xFF - 0x25 = 0xDA (ALU does subtract for compare)
+            1'b0,          // don't care; set 0
+            1'b1,          // branch
+            1'b0,
+            1'b0,
+            2'b01,         // subtract/compare
+            1'b0,
+            1'b0,          // alu_src = reg
+            1'b0           // reg_write
+        );
         // -------------------------------------------------------
         // Test group 2: ALU Control Unit
         // -------------------------------------------------------
-        $write("\tTest Case 1: R-type (add) ...");
-        test_case(32'h00000024, 32'hFFFFFFFF, 32'h0001, 1'b0, 32'h0001, 1'b1, 1'b0, 1'b0, 1'b0, 2'b10, 1'b0, 1'b0, 1'b1);
+        //$write("\tTest Case 1: R-type (add) ...");
+        //test_case(32'h00000024, 32'hFFFFFFFF, 32'h0001, 1'b0, 32'h0001, 1'b1, 1'b0, 1'b0, 1'b0, 2'b10, 1'b0, 1'b0, 1'b1);
 
         // -------------------------------------------------------
         // More ALU Control Unit tests jere
