@@ -3,8 +3,8 @@
 // Name: Colby Ransom
 // Email: crans006@ucr.edu
 // 
-// Assignment name: Lab02-ALU
-// Lab section: Section01
+// Assignment name: Datapath Control Unit
+// Lab section: 01
 // TA: Allan Knight
 // 
 // I hereby certify that I have not received assistance on this assignment,
